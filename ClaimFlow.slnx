@@ -1,14 +1,20 @@
 <Solution>
   <Folder Name="/Tests/">
-    <Project Path="ClaimFlow.Infrastructure.Tests/ClaimFlow.Infrastructure.Tests.csproj">
-      <BuildDependency Project="ClaimFlow.Infrastructure/ClaimFlow.Infrastructure.csproj" />
-    </Project>
     <Project Path="Tests/ClaimFlow.Domain.Tests/ClaimFlow.Domain.Tests.csproj">
       <BuildDependency Project="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
     </Project>
+    <Project Path="Tests/ClaimFlow.Infrastructure.Tests/ClaimFlow.Infrastructure.Tests.csproj" />
   </Folder>
-  <Project Path="ClaimFlow.API/ClaimFlow.API.csproj" />
+  <Project Path="ClaimFlow.API/ClaimFlow.API.csproj">
+    <BuildDependency Project="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
+    <BuildDependency Project="ClaimFlow.Infrastructure/ClaimFlow.Infrastructure.csproj" />
+  </Project>
   <Project Path="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
-  <Project Path="ClaimFlow.Infrastructure/ClaimFlow.Infrastructure.csproj" />
-  <Project Path="ClaimFlow.Worker/ClaimFlow.Worker.csproj" />
+  <Project Path="ClaimFlow.Infrastructure/ClaimFlow.Infrastructure.csproj">
+    <BuildDependency Project="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
+  </Project>
+  <Project Path="ClaimFlow.Worker/ClaimFlow.Worker.csproj">
+    <BuildDependency Project="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
+    <BuildDependency Project="ClaimFlow.Infrastructure/ClaimFlow.Infrastructure.csproj" />
+  </Project>
 </Solution>
