@@ -21,6 +21,26 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+  rabbitmq:
+    image: rabbitmq:4.0-management-alpine
+    container_name: claimflow_rabbitmq
+    ports:
+      - "5672:5672"   #amqp port
+      - "15672:15672" #web portal
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+  claimflow.worker:
+    image: ${DOCKER_REGISTRY-}claimflowworker
+    build:
+      context: .
+      dockerfile: ClaimFlow.Worker/Dockerfile
+    environment:
+      - CLAIMFLOW_DB_PASSWORD=${CLAIMFLOW_DB_PASSWORD}
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+      - postgres_db
 
 volumes:
   postgres_data:

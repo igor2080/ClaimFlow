@@ -1,7 +1,9 @@
-﻿using ClaimFlow.Domain;
+﻿using ClaimFlow.API.DTOs.Requests;
+using ClaimFlow.Domain;
 using ClaimFlow.Infrastructure;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mail;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClaimFlow.API.Controllers
 {
@@ -17,28 +19,66 @@ namespace ClaimFlow.API.Controllers
         }
 
         [HttpPost("CreateCustomer")]
-        public string CreateCustomer(string name, string email)
+        public async Task<IActionResult> CreateCustomer([FromBody]CreateCustomerRequest request)
         {
-            if(string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email))
+            var existingCustomer = await _context.Customers.AnyAsync(c => c.Email == request.Email);
+            if (existingCustomer)
             {
-                return "Name and Email are required";
+                return Conflict($"Customer with email '{request.Email}' already exists.");
             }
-            if(new MailAddress(email).Address != email)
-            {
-                return "Invalid email format";
-            }
-            Customer customer = new Customer
+            var customer = new Customer
             {
                 CustomerId = Guid.NewGuid(),
-                FullName = name,
-                Email = email,
+                FullName = request.Name,
+                Email = request.Email,
                 CreatedAt = DateTime.UtcNow
             };
 
             _context.Add<Customer>(customer);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            return $"Customer '{name}' ID:({customer.CustomerId}) created";
+            return Ok($"Customer '{request.Name}' ID:({customer.CustomerId}) created");
+        }
+
+        [HttpPost("CreatePolicy")]
+        public async Task<IActionResult> CreatePolicy([FromBody] CreatePolicyRequest request)
+        {
+            {
+                if (request.CustomerId == Guid.Empty || request.PolicyNumber < 1 || request.ValidFrom >= request.ValidTo)
+                {
+                    return BadRequest("Invalid input parameters");
+                }
+                if (Enum.IsDefined(typeof(PolicyType), request.PolicyType) == false)
+                {
+                    return BadRequest("Invalid policy type");
+                }
+                var policyExists = await _context.Policies.AnyAsync(p => p.PolicyNumber == request.PolicyNumber);
+                if (policyExists)
+                {
+                    return Conflict($"Policy number '{request.PolicyNumber}' already exists");
+                }
+                var customer = await _context.Customers.FindAsync(request.CustomerId);
+                if (customer == null)
+                {
+                    return NotFound("Customer not found");
+                }
+
+
+                Policy policy = new Policy
+                {
+                    PolicyId = Guid.NewGuid(),
+                    CustomerId = request.CustomerId,
+                    Type = (PolicyType)request.PolicyType,
+                    PolicyNumber = request.PolicyNumber,
+                    CoverageAmount = request.CoverageAmount,
+                    ValidFrom = request.ValidFrom,
+                    ValidTo = request.ValidTo,
+                };
+
+                _context.Add<Policy>(policy);
+                await _context.SaveChangesAsync();
+                return Ok($"Policy '{request.PolicyNumber}' ID:({policy.PolicyId}) created for Customer ID:({request.CustomerId})");
+            }
         }
     }
 }

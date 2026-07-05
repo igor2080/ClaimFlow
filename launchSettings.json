@@ -4,7 +4,8 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
-        "claimflow.api": "StartDebugging"
+        "claimflow.api": "StartDebugging",
+        "claimflow.worker": "StartDebugging"
       }
     }
   }

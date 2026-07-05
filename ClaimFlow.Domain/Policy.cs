@@ -8,9 +8,9 @@ namespace ClaimFlow.Domain
 {
     public enum PolicyType
     {
-        Auto,
-        Property,
-        Health
+        Auto = 0,
+        Property = 1,
+        Health = 2,
     }
     public class Policy
     {

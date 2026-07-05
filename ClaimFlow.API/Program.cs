@@ -1,6 +1,9 @@
 
+using ClaimFlow.API.DTOs.Requests;
 using ClaimFlow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 namespace ClaimFlow.API
 {
@@ -16,18 +19,28 @@ namespace ClaimFlow.API
             builder.Services.AddDbContext<ClaimFlowDbContext>(options =>
                 options.UseNpgsql(fullConnectionString));
 
+
+            //registers all validators that are in the same assembly as CreateCustomerRequestValidator,  
+            //removing the need for explicitly registering each validator
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerRequestValidator>();
+            //enables web api controllers to automatically perform validation without the need of explicit injection of validators
+            builder.Services.AddFluentValidationAutoValidation();
             builder.Services.AddControllers();
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173") // Vite's default port
+                    policy.WithOrigins("http://localhost:5173") //Vite's default port
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
             });
+
+            
+
 
             var app = builder.Build();
 
