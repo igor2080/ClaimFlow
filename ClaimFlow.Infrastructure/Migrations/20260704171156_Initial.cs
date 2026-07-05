@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,8 +15,7 @@ namespace ClaimFlow.Infrastructure.Migrations
                 name: "Customers",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     FullName = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -31,9 +29,8 @@ namespace ClaimFlow.Infrastructure.Migrations
                 name: "Policies",
                 columns: table => new
                 {
-                    PolicyId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    PolicyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     PolicyNumber = table.Column<int>(type: "integer", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     CoverageAmount = table.Column<int>(type: "integer", nullable: false),
@@ -55,9 +52,8 @@ namespace ClaimFlow.Infrastructure.Migrations
                 name: "Claims",
                 columns: table => new
                 {
-                    ClaimId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    PolicyId = table.Column<int>(type: "integer", nullable: false),
+                    ClaimId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PolicyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Amount = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     IncidentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -81,9 +77,8 @@ namespace ClaimFlow.Infrastructure.Migrations
                 name: "ClaimStatusHistories",
                 columns: table => new
                 {
-                    ClaimStatusHistoryId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ClaimId = table.Column<int>(type: "integer", nullable: false),
+                    ClaimStatusHistoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimId = table.Column<Guid>(type: "uuid", nullable: false),
                     FromStatus = table.Column<int>(type: "integer", nullable: false),
                     ToStatus = table.Column<int>(type: "integer", nullable: false),
                     ChangedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),

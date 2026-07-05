@@ -17,4 +17,7 @@
     <BuildDependency Project="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
     <BuildDependency Project="ClaimFlow.Infrastructure/ClaimFlow.Infrastructure.csproj" />
   </Project>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
 </Solution>

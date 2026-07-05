@@ -24,11 +24,9 @@ namespace ClaimFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("ClaimFlow.Domain.Claim", b =>
                 {
-                    b.Property<int>("ClaimId")
+                    b.Property<Guid>("ClaimId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ClaimId"));
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Amount")
                         .HasColumnType("integer");
@@ -49,8 +47,8 @@ namespace ClaimFlow.Infrastructure.Migrations
                     b.Property<DateTime>("IncidentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("PolicyId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("PolicyId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -64,11 +62,9 @@ namespace ClaimFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("ClaimFlow.Domain.ClaimStatusHistory", b =>
                 {
-                    b.Property<int>("ClaimStatusHistoryId")
+                    b.Property<Guid>("ClaimStatusHistoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ClaimStatusHistoryId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("ChangedAt")
                         .HasColumnType("timestamp with time zone");
@@ -77,8 +73,8 @@ namespace ClaimFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ClaimId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ClaimId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Comment")
                         .IsRequired()
@@ -99,11 +95,9 @@ namespace ClaimFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("ClaimFlow.Domain.Customer", b =>
                 {
-                    b.Property<int>("CustomerId")
+                    b.Property<Guid>("CustomerId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CustomerId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -123,17 +117,15 @@ namespace ClaimFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("ClaimFlow.Domain.Policy", b =>
                 {
-                    b.Property<int>("PolicyId")
+                    b.Property<Guid>("PolicyId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PolicyId"));
+                        .HasColumnType("uuid");
 
                     b.Property<int>("CoverageAmount")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("PolicyNumber")
                         .HasColumnType("integer");

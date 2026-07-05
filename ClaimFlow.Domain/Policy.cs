@@ -14,8 +14,8 @@ namespace ClaimFlow.Domain
     }
     public class Policy
     {
-        public int PolicyId { get; set; }
-        public int CustomerId { get; set; }
+        public Guid PolicyId { get; set; }
+        public Guid CustomerId { get; set; }
         public Customer Customer { get; set; }
         public int PolicyNumber { get; set; }
         public PolicyType Type { get; set; }

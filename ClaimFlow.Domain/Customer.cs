@@ -8,7 +8,7 @@ namespace ClaimFlow.Domain
 {
     public class Customer
     {
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
         public DateTime CreatedAt { get; set; }

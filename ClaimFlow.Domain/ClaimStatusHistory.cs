@@ -8,8 +8,8 @@ namespace ClaimFlow.Domain
 {
     public class ClaimStatusHistory
     {
-        public int ClaimStatusHistoryId { get; set; }
-        public int ClaimId { get; set; }
+        public Guid ClaimStatusHistoryId { get; set; }
+        public Guid ClaimId { get; set; }
         public Claim Claim { get; set; }
         public ClaimStatus FromStatus { get; set; }
         public ClaimStatus ToStatus { get; set; }

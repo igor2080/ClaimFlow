@@ -1,0 +1,27 @@
+services:
+  claimflow.api:
+    image: ${DOCKER_REGISTRY-}claimflowapi
+    build:
+      context: .
+      dockerfile: ClaimFlow.API/Dockerfile
+    ports:
+     - "5000:8080"
+    environment:
+      - CLAIMFLOW_DB_PASSWORD=${CLAIMFLOW_DB_PASSWORD}
+    depends_on:
+     - postgres_db
+  postgres_db:
+    image: postgres:18.4
+    container_name: claimflow_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${CLAIMFLOW_DB_PASSWORD}
+      POSTGRES_DB: ClaimFlowDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
+  

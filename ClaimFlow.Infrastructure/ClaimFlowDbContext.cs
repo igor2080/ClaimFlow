@@ -14,5 +14,6 @@ namespace ClaimFlow.Infrastructure
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Policy> Policies { get; set; }
         public DbSet<ClaimStatusHistory> ClaimStatusHistories { get; set; }
+
     }
 }

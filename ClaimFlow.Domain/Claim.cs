@@ -14,8 +14,8 @@ namespace ClaimFlow.Domain
     }
     public class Claim
     {
-        public int ClaimId { get; set; }
-        public int PolicyId { get; set; }
+        public Guid ClaimId { get; set; }
+        public Guid PolicyId { get; set; }
         public Policy Policy { get; set; } = null!;
         public int Amount { get; set; }
         public string Description { get; set; }
