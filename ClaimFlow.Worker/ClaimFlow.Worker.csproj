@@ -16,5 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClaimFlow.Domain\ClaimFlow.Domain.csproj" />
+    <ProjectReference Include="..\ClaimFlow.Infrastructure\ClaimFlow.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

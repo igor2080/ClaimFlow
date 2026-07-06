@@ -1,5 +1,7 @@
+using ClaimFlow.Infrastructure;
 using ClaimFlow.Worker.Consumers;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClaimFlow.Worker
 {
@@ -8,7 +10,14 @@ namespace ClaimFlow.Worker
         public static void Main(string[] args)
         {
             var builder = Host.CreateApplicationBuilder(args);
+
             builder.Services.AddHostedService<Worker>();
+
+            var connectionString = builder.Configuration.GetConnectionString("ClaimFlowConnection");
+            var dbPassword = Environment.GetEnvironmentVariable("CLAIMFLOW_DB_PASSWORD");
+            var fullConnectionString = $"{connectionString}Password={dbPassword};";
+            builder.Services.AddDbContext<ClaimFlowDbContext>(options =>
+                options.UseNpgsql(fullConnectionString));
 
             builder.Services.AddMassTransit(x =>
             {
