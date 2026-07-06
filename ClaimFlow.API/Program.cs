@@ -4,6 +4,7 @@ using ClaimFlow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using MassTransit;
 
 namespace ClaimFlow.API
 {
@@ -27,6 +28,20 @@ namespace ClaimFlow.API
             builder.Services.AddFluentValidationAutoValidation();
             builder.Services.AddControllers();
 
+            builder.Services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("rabbitmq", "/", h =>
+                    {
+                        h.Username(Environment.GetEnvironmentVariable("CLAIMFLOW_RABBIT_USER")!);
+                        h.Password(Environment.GetEnvironmentVariable("CLAIMFLOW_RABBIT_PASS")!);
+                    });
+
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddCors(options =>
@@ -39,7 +54,7 @@ namespace ClaimFlow.API
                 });
             });
 
-            
+
 
 
             var app = builder.Build();

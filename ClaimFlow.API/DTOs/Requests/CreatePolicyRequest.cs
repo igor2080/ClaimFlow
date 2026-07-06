@@ -11,7 +11,7 @@ namespace ClaimFlow.API.DTOs.Requests
         int PolicyNumber,
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Policy type must be a valid enum integer.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Policy type must be a valid enum integer.")]
         int PolicyType,
 
         [Required]
