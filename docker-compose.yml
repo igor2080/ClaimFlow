@@ -43,7 +43,21 @@ services:
     depends_on:
       - rabbitmq
       - postgres_db
-
+  claimflow-frontend:
+    image: claimflow-frontend
+    container_name: claimflow_frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment: #api endpoint
+      - VITE_API_URL=http://localhost:5000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - claimflow.api #Vite boots up AFTER the api
 volumes:
   postgres_data:
   

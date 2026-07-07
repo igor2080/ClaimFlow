@@ -1,4 +1,5 @@
-﻿using ClaimFlow.API.DTOs.Requests;
+﻿using ClaimFlow.API.DTOs.Data;
+using ClaimFlow.API.DTOs.Requests;
 using ClaimFlow.Domain;
 using ClaimFlow.Domain.Events;
 using ClaimFlow.Infrastructure;
@@ -42,6 +43,58 @@ namespace ClaimFlow.API.Controllers
             await _context.SaveChangesAsync();
 
             return Ok($"Customer '{request.Name}' ID:({customer.CustomerId}) created");
+        }
+
+        [HttpGet("GetCustomer/{id:guid}")]
+        public async Task<IActionResult> GetCustomer(Guid id)
+        {
+            var customer = await _context.Customers.Include(x => x.Policies).FirstOrDefaultAsync(x => x.CustomerId == id);
+            if (customer == null)
+            {
+                return NotFound($"Customer {id} not found");
+            }
+
+            return Ok(customer);
+        }
+
+        [HttpGet("GetCustomers")]
+        public async Task<IActionResult> GetCustomers(bool withPolicies = false)
+        {
+            if (withPolicies)
+            {
+                var customers = await _context.Customers.Include(x => x.Policies)
+                    .Select(c => new CustomerDto
+                    {
+                        CustomerId = c.CustomerId,
+                        FullName = c.FullName,
+                        Email = c.Email,
+                        CreatedAt = c.CreatedAt,
+                        Policies = c.Policies.Select(p => new PolicyDto
+                        {
+                            PolicyId = p.PolicyId,
+                            PolicyNumber = p.PolicyNumber,
+                            PolicyType = (int)p.Type,
+                            CoverageAmount = p.CoverageAmount,
+                            ValidFrom = p.ValidFrom,
+                            ValidTo = p.ValidTo
+                        }).ToList()
+                    }).ToListAsync();
+
+                return Ok(customers);
+            }
+            else
+            {
+                var customers = await _context.Customers
+                    .Select(c => new CustomerDto
+                    {
+                        CustomerId = c.CustomerId,
+                        FullName = c.FullName,
+                        Email = c.Email,
+                        CreatedAt = c.CreatedAt
+                    }).ToListAsync();
+
+                return Ok(customers);
+            }
         }
 
         [HttpPost("CreatePolicy")]
