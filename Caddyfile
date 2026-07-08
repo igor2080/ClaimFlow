@@ -1,0 +1,10 @@
+localhost {
+	#api
+	handle /api/* {
+		reverse_proxy claimflow.api:8080
+	}
+	#non api
+	handle {
+		reverse_proxy claimflow-frontend:5173
+	}
+}

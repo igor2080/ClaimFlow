@@ -4,8 +4,8 @@ services:
     build:
       context: .
       dockerfile: ClaimFlow.API/Dockerfile
-    ports:
-     - "5000:8080"
+    #ports:
+    # - "5000:8080"
     environment:
       - CLAIMFLOW_DB_PASSWORD=${CLAIMFLOW_DB_PASSWORD}
       - CLAIMFLOW_RABBIT_USER=${CLAIMFLOW_RABBIT_USER}
@@ -49,15 +49,31 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
+    #ports:
+    #  - "5173:5173"
     environment: #api endpoint
-      - VITE_API_URL=http://localhost:5000
+      #- VITE_API_URL=http://localhost:5000
+      - VITE_API_URL=https://localhost
     volumes:
       - ./frontend:/app
       - /app/node_modules
     depends_on:
       - claimflow.api #Vite boots up AFTER the api
+  caddy:
+    image: caddy:2-alpine
+    container_name: claimflow_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - claimflow.api
+      - claimflow-frontend
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:
   

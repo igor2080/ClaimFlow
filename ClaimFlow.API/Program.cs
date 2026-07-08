@@ -48,14 +48,14 @@ namespace ClaimFlow.API
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173") //Vite's default port
+                    policy.WithOrigins(
+                        "https://localhost",
+                        "http://localhost:5173" //Vite's default port
+                        ) 
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
             });
-
-
-
 
             var app = builder.Build();
 
