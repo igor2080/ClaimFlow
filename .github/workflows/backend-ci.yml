@@ -1,4 +1,4 @@
-    name: .NET Core CI
+name: .NET Core CI
 
 on:
   push:
@@ -19,6 +19,7 @@ jobs:
       run: dotnet restore ClaimFlow.slnx
     - name: Build
       run: dotnet build ClaimFlow.slnx --no-restore --configuration Release 
+      
   frontend-ci:
     runs-on: ubuntu-latest
     steps:
