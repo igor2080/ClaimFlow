@@ -1,4 +1,4 @@
-name: .NET Core CI
+    name: .NET Core CI
 
 on:
   push:
@@ -19,3 +19,20 @@ jobs:
       run: dotnet restore ClaimFlow.slnx
     - name: Build
       run: dotnet build ClaimFlow.slnx --no-restore --configuration Release 
+  frontend-ci:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ./frontend
+      
+    - name: Build Frontend
+      run: npm run build
+      working-directory: ./frontend
