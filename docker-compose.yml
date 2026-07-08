@@ -7,6 +7,7 @@ services:
     #ports:
     # - "5000:8080"
     environment:
+      - ASPNETCORE_URLS=http://+:8080
       - CLAIMFLOW_DB_PASSWORD=${CLAIMFLOW_DB_PASSWORD}
       - CLAIMFLOW_RABBIT_USER=${CLAIMFLOW_RABBIT_USER}
       - CLAIMFLOW_RABBIT_PASS=${CLAIMFLOW_RABBIT_PASS}
@@ -30,8 +31,8 @@ services:
       - "5672:5672"   #amqp port
       - "15672:15672" #web portal
     environment:
-      RABBITMQ_DEFAULT_USER: ${CLAIMFLOW_RABBIT_USER}
-      RABBITMQ_DEFAULT_PASS: ${CLAIMFLOW_RABBIT_PASS}
+      - RABBITMQ_DEFAULT_USER=${CLAIMFLOW_RABBIT_USER}
+      - RABBITMQ_DEFAULT_PASS=${CLAIMFLOW_RABBIT_PASS}
   claimflow.worker:
     image: ${DOCKER_REGISTRY-}claimflowworker
     build:
@@ -74,6 +75,7 @@ services:
       - claimflow-frontend
 volumes:
   postgres_data:
+    name: claimflow_shared_postgres_volume
   caddy_data:
   caddy_config:
   
