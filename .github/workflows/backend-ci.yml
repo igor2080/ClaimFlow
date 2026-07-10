@@ -49,6 +49,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Convert repository name to lowercase
+      run: |
+        echo "IMAGE_REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -66,8 +70,8 @@ jobs:
         file: ClaimFlow.API/Dockerfile
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}/claimflow-api:latest
-          ghcr.io/${{ github.repository }}/claimflow-api:${{ github.sha }}
+          ghcr.io/${{ env.IMAGE_REPO }}/claimflow-api:latest
+          ghcr.io/${{ env.IMAGE_REPO }}/claimflow-api:${{ github.sha }}
         
     - name: Build and push worker
       uses: docker/build-push-action@v5
@@ -76,8 +80,8 @@ jobs:
         file: ClaimFlow.Worker/Dockerfile
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}/claimflow-worker:latest
-          ghcr.io/${{ github.repository }}/claimflow-worker:${{ github.sha }}
+          ghcr.io/${{ env.IMAGE_REPO }}/claimflow-worker:latest
+          ghcr.io/${{ env.IMAGE_REPO }}/claimflow-worker:${{ github.sha }}
     
     - name: Build and push frontend
       uses: docker/build-push-action@v5
@@ -86,5 +90,5 @@ jobs:
         file: ./frontend/Dockerfile
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}/claimflow-frontend:latest
-          ghcr.io/${{ github.repository }}/claimflow-frontend:${{ github.sha }}
+          ghcr.io/${{ env.IMAGE_REPO }}/claimflow-frontend:latest
+          ghcr.io/${{ env.IMAGE_REPO }}/claimflow-frontend:${{ github.sha }}
