@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,3 +41,50 @@ jobs:
     - name: Build Frontend
       run: npm run build
       working-directory: ./frontend
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, frontend-ci] #reliance on the previous steps
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' #only deploy on master 
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login into GitHub Container Registry (GHCR)
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push API
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ClaimFlow.API/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository }}/claimflow-api:latest
+          ghcr.io/${{ github.repository }}/claimflow-api:${{ github.sha }}
+        
+    - name: Build and push worker
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ClaimFlow.Worker/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository }}/claimflow-worker:latest
+          ghcr.io/${{ github.repository }}/claimflow-worker:${{ github.sha }}
+    
+    - name: Build and push frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository }}/claimflow-frontend:latest
+          ghcr.io/${{ github.repository }}/claimflow-frontend:${{ github.sha }}
