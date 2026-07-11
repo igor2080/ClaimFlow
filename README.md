@@ -2,7 +2,7 @@
 An insurance claims processing system: submit a claim, get it validated,
 scored asynchronously and decided.
 
-![.NET Core CI](https://github.com/igor2080/ClaimFlow/actions/workflows/backend-ci.yml/badge.svg
+![.NET Core CI](https://github.com/igor2080/ClaimFlow/actions/workflows/backend-ci.yml/badge.svg)
 
 ## Architecture
 ```mermaid
