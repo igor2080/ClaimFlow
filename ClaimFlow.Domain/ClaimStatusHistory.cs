@@ -17,5 +17,6 @@ namespace ClaimFlow.Domain
         public string ChangedBy { get; set; }
         public string Comment { get; set; }
 
+
     }
 }

@@ -5,6 +5,7 @@ using ClaimFlow.Domain.Events;
 using ClaimFlow.Infrastructure;
 using FluentValidation;
 using MassTransit;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -151,18 +152,20 @@ namespace ClaimFlow.API.Controllers
                 return BadRequest("The incident date is in the future.");
             }
 
-            var claim = new Claim
-            {
-                ClaimId = Guid.NewGuid(),
-                Amount = request.Amount,
-                CreatedAt = DateTime.Now.ToUniversalTime(),
-                Status = ClaimStatus.UnderReview,
-                Description = request.Description,
-                IncidentDate = request.IncidentDate.ToUniversalTime(),
-                PolicyId = request.PolicyId,
-            };
+            var claim = new Claim(
+                claimId: Guid.NewGuid(),
+                policyId: request.PolicyId,
+                amount: request.Amount,
+                description: request.Description,
+                incidentDate: request.IncidentDate.ToUniversalTime(),
+                status: ClaimStatus.UnderReview,
+                createdAt: DateTime.Now.ToUniversalTime(),
+                initialHistory: out ClaimStatusHistory initialHistory
+                );
 
             _context.Claims.Add(claim);
+            _context.ClaimStatusHistories.Add(initialHistory);
+
             await _context.SaveChangesAsync();
 
             await _publishEndpoint.Publish(new ClaimCreatedEvent(

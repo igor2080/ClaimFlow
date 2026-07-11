@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ClaimFlow.Domain.Events;
 using ClaimFlow.Infrastructure;
+using ClaimFlow.Domain;
 
 
 namespace ClaimFlow.Worker.Consumers
@@ -27,7 +28,7 @@ namespace ClaimFlow.Worker.Consumers
 
             _logger.LogInformation(">>> [Worker] Received ClaimCreatedEvent!");
             _logger.LogInformation($">>> Processing Claim ID: {message.ClaimId} for Amount: ${message.Amount}");
-            
+
             var claim = _context.Claims.FirstOrDefault(c => c.ClaimId == message.ClaimId);
 
             if (claim == null)
@@ -36,29 +37,30 @@ namespace ClaimFlow.Worker.Consumers
             }
             else
             {
-                var policy = _context.Policies.FirstOrDefault(p=>p.PolicyId == claim.PolicyId);
+                var policy = _context.Policies.FirstOrDefault(p => p.PolicyId == claim.PolicyId);
                 if (policy == null)
                 {
                     _logger.LogError(">>> The policy does not exist.");
                 }
                 else
                 {
-                    if(claim.Amount< policy.CoverageAmount)
+                    ClaimStatusHistory updateHistory;
+                    if (claim.Amount < policy.CoverageAmount)
                     {
-                        claim.Status = Domain.ClaimStatus.Approved;
+                        updateHistory=claim.UpdateStatus(Domain.ClaimStatus.Approved,"Worker", "Fits within the coverage");
                     }
                     else
                     {
-                        claim.Status = Domain.ClaimStatus.Rejected;
+                        updateHistory=claim.UpdateStatus(Domain.ClaimStatus.Rejected, "Worker", "Outside the coverage range");
                     }
-
+                    _context.ClaimStatusHistories.Add(updateHistory);
                     await _context.SaveChangesAsync();
                     await Task.Delay(1000); //arbitrarily delaying the worker
 
                     _logger.LogInformation($">>> [Worker] Claim {message.ClaimId} processed successfully.");
                 }
-                
-            }           
+
+            }
         }
     }
 }
