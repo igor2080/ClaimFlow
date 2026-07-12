@@ -3,6 +3,7 @@ using ClaimFlow.API.DTOs.Requests;
 using ClaimFlow.Domain;
 using ClaimFlow.Domain.Events;
 using ClaimFlow.Infrastructure;
+using ClaimFlow.Infrastructure.Extensions;
 using FluentValidation;
 using MassTransit;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -139,6 +140,71 @@ namespace ClaimFlow.API.Controllers
 
         }
 
+        [HttpGet("GetPolicy/{id:Guid}")]
+        public async Task<IActionResult> GetPolicy(Guid id, bool withHistory = true)
+        {
+            var policyExists = await _context.Policies.AnyAsync(x => x.PolicyId == id);
+
+            if (!policyExists)
+            {
+                return NotFound($"Policy ID:({id}) does not exist.");
+            }
+
+            Policy policy = await _context.Policies.Include(x => x.Customer).Include(x => x.Claims).ThenInclude(x => x.StatusHistories).FirstAsync(x => x.PolicyId == id);
+
+            CustomerDto customer = new CustomerDto
+            {
+                FullName = policy.Customer.FullName,
+                CreatedAt = policy.Customer.CreatedAt,
+                CustomerId = policy.CustomerId,
+                Email = policy.Customer.Email,
+            };
+
+            var claims = policy.Claims?.Select(x => new ClaimDto
+            {
+                PolicyId = x.PolicyId,
+                Amount = x.Amount,
+                ClaimId = x.ClaimId,
+                CreatedAt = x.CreatedAt,
+                DecidedAt = x.DecidedAt,
+                DecisionReason = x.DecisionReason,
+                Description = x.Description,
+                IncidentDate = x.IncidentDate,
+                Status = x.Status.ToString()
+            }).ToList();
+
+            PolicyResponseDto response = new()
+            {
+                PolicyId = policy.PolicyId,
+                Customer = customer,
+                PolicyNumber = policy.PolicyNumber,
+                Type = policy.Type,
+                CoverageAmount = policy.CoverageAmount,
+                ValidFrom = policy.ValidFrom.ToUniversalTime(),
+                ValidTo = policy.ValidTo.ToUniversalTime(),
+                Claims = claims
+            };
+
+            if (withHistory)
+            {
+                response.ClaimStatusHistories = policy.Claims?
+                    .SelectMany(x => x.StatusHistories).OrderBy(x => x.ClaimId)
+                    .Select(x => new ClaimHistoryDto
+                    {
+                        ClaimStatusHistoryId = x.ClaimStatusHistoryId,
+                        ClaimId = x.ClaimId,
+                        FromStatus = x.FromStatus.ToString(),
+                        ToStatus = x.ToStatus.ToString(),
+                        ChangedAt = x.ChangedAt.ToUniversalTime(),
+                        ChangedBy = x.ChangedBy,
+                        Comment = x.Comment
+                    }).ToList();
+            }
+
+
+            return Ok(response);
+        }
+
         [HttpPost("CreateClaim")]
         public async Task<IActionResult> CreateClaim([FromBody] CreateClaimRequest request)
         {
@@ -158,13 +224,10 @@ namespace ClaimFlow.API.Controllers
                 amount: request.Amount,
                 description: request.Description,
                 incidentDate: request.IncidentDate.ToUniversalTime(),
-                status: ClaimStatus.UnderReview,
-                createdAt: DateTime.Now.ToUniversalTime(),
-                initialHistory: out ClaimStatusHistory initialHistory
+                createdAt: DateTime.Now.ToUniversalTime()
                 );
 
             _context.Claims.Add(claim);
-            _context.ClaimStatusHistories.Add(initialHistory);
 
             await _context.SaveChangesAsync();
 

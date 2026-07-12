@@ -20,26 +20,28 @@ namespace ClaimFlow.Domain
         {
 
         }
-        public Claim(Guid claimId, Guid policyId, int amount, string description, DateTime incidentDate, ClaimStatus status, DateTime createdAt, out ClaimStatusHistory initialHistory)
+        public Claim(Guid claimId, Guid policyId, int amount, string description, DateTime incidentDate, DateTime createdAt)
         {
             ClaimId = claimId;
             PolicyId = policyId;
             Amount = amount;
             Description = description;
             IncidentDate = incidentDate;
-            Status = status;
+            Status = ClaimStatus.UnderReview;
             CreatedAt = createdAt;
 
-            initialHistory = new ClaimStatusHistory
+            var initialHistory = new ClaimStatusHistory
             {
                 ClaimStatusHistoryId = Guid.NewGuid(),
                 ClaimId = this.ClaimId,
                 FromStatus = ClaimStatus.None,
-                ToStatus = ClaimStatus.UnderReview,
+                ToStatus = Status,
                 ChangedAt = DateTime.UtcNow,
                 ChangedBy = "API",
                 Comment = "Claim created"
             };
+
+            StatusHistories.Add(initialHistory);
         }
 
         public Guid ClaimId { get; set; }
@@ -48,16 +50,26 @@ namespace ClaimFlow.Domain
         public int Amount { get; set; }
         public string Description { get; set; }
         public DateTime IncidentDate { get; set; }
-        public ClaimStatus Status { get; set; }
+        public ClaimStatus Status { get; private set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? DecidedAt { get; set; }
-        public string? DecisionReason { get; set; }
+        public DateTime? DecidedAt { get; private set; }
+        public string? DecisionReason { get; private set; }
+        public List<ClaimStatusHistory> StatusHistories { get; private set; } = [];
 
-        public ClaimStatusHistory UpdateStatus(ClaimStatus status, string changedBy, string comment = "")
+        public void UpdateStatus(ClaimStatus status, string changedBy, string comment = "")
         {
+            if (this.Status == status) return; //redundant call
+
             ClaimStatus oldStatus = this.Status;
             this.Status = status;
-            return new ClaimStatusHistory
+
+            if (status == ClaimStatus.Approved || status == ClaimStatus.Rejected)
+            {
+                this.DecidedAt = DateTime.UtcNow;
+                this.DecisionReason = comment;
+            }
+
+            var history = new ClaimStatusHistory
             {
                 ClaimStatusHistoryId = Guid.NewGuid(),
                 ClaimId = this.ClaimId,
@@ -67,6 +79,8 @@ namespace ClaimFlow.Domain
                 ChangedBy = changedBy,
                 Comment = comment
             };
+
+            this.StatusHistories.Add(history);
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ClaimFlow.Domain.Events;
 using ClaimFlow.Infrastructure;
 using ClaimFlow.Domain;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace ClaimFlow.Worker.Consumers
@@ -29,7 +30,7 @@ namespace ClaimFlow.Worker.Consumers
             _logger.LogInformation(">>> [Worker] Received ClaimCreatedEvent!");
             _logger.LogInformation($">>> Processing Claim ID: {message.ClaimId} for Amount: ${message.Amount}");
 
-            var claim = _context.Claims.FirstOrDefault(c => c.ClaimId == message.ClaimId);
+            var claim = _context.Claims.Include(x => x.StatusHistories).FirstOrDefault(c => c.ClaimId == message.ClaimId);
 
             if (claim == null)
             {
@@ -44,16 +45,15 @@ namespace ClaimFlow.Worker.Consumers
                 }
                 else
                 {
-                    ClaimStatusHistory updateHistory;
                     if (claim.Amount < policy.CoverageAmount)
                     {
-                        updateHistory=claim.UpdateStatus(Domain.ClaimStatus.Approved,"Worker", "Fits within the coverage");
+                        claim.UpdateStatus(Domain.ClaimStatus.Approved,"Worker", "Fits within the coverage");
                     }
                     else
                     {
-                        updateHistory=claim.UpdateStatus(Domain.ClaimStatus.Rejected, "Worker", "Outside the coverage range");
+                        claim.UpdateStatus(Domain.ClaimStatus.Rejected, "Worker", "Outside the coverage range");
                     }
-                    _context.ClaimStatusHistories.Add(updateHistory);
+                    
                     await _context.SaveChangesAsync();
                     await Task.Delay(1000); //arbitrarily delaying the worker
 

@@ -6,6 +6,6 @@
         public string FullName { get; set; }
         public string Email { get; set; }
         public DateTime CreatedAt { get; set; }
-        public List<PolicyDto> Policies { get; set; } = new();
+        public List<PolicyDto>? Policies { get; set; }
     }
 }
