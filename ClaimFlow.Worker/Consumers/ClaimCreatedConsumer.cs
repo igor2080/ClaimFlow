@@ -26,15 +26,18 @@ namespace ClaimFlow.Worker.Consumers
         public async Task Consume(ConsumeContext<ClaimCreatedEvent> claimContext)
         {
             var message = claimContext.Message;
-
             _logger.LogInformation(">>> [Worker] Received ClaimCreatedEvent!");
             _logger.LogInformation($">>> Processing Claim ID: {message.ClaimId} for Amount: ${message.Amount}");
-
+            
             var claim = _context.Claims.Include(x => x.StatusHistories).FirstOrDefault(c => c.ClaimId == message.ClaimId);
 
             if (claim == null)
             {
                 _logger.LogError(">>> The claim does not exist.");
+            }
+            else if (claim.Status != ClaimStatus.UnderReview)
+            {
+                _logger.LogError(">>> The claim has already been processed.");
             }
             else
             {
@@ -53,9 +56,9 @@ namespace ClaimFlow.Worker.Consumers
                     {
                         claim.UpdateStatus(Domain.ClaimStatus.Rejected, "Worker", "Outside the coverage range");
                     }
-                    
-                    await _context.SaveChangesAsync();
+
                     await Task.Delay(1000); //arbitrarily delaying the worker
+                    await _context.SaveChangesAsync();
 
                     _logger.LogInformation($">>> [Worker] Claim {message.ClaimId} processed successfully.");
                 }

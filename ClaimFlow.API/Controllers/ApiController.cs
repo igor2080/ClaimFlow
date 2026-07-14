@@ -56,7 +56,25 @@ namespace ClaimFlow.API.Controllers
                 return NotFound($"Customer {id} not found");
             }
 
-            return Ok(customer);
+            var policies = customer.Policies.Select(x => new PolicyDto
+            {
+                PolicyId = x.PolicyId,
+                PolicyNumber = x.PolicyNumber,
+                PolicyType = (int)x.Type,
+                CoverageAmount = x.CoverageAmount,
+                ValidFrom = x.ValidFrom,
+                ValidTo = x.ValidTo,
+            }).ToList();
+
+            var customerResult = new CustomerDto
+            {
+                FullName = customer.FullName,
+                Email = customer.Email,
+                Policies = policies,
+                CreatedAt = customer.CreatedAt,
+                CustomerId = customer.CustomerId
+            };
+            return Ok(customerResult);
         }
 
         [HttpGet("GetCustomers")]
