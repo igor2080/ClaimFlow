@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ClaimFlow.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,7 @@ namespace ClaimFlow.Infrastructure.Migrations
                     CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     FullName = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -34,8 +34,8 @@ namespace ClaimFlow.Infrastructure.Migrations
                     PolicyNumber = table.Column<int>(type: "integer", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     CoverageAmount = table.Column<int>(type: "integer", nullable: false),
-                    ValidFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ValidTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    ValidFrom = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ValidTo = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -56,10 +56,10 @@ namespace ClaimFlow.Infrastructure.Migrations
                     PolicyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Amount = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    IncidentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IncidentDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    DecidedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    DecidedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     DecisionReason = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -81,7 +81,7 @@ namespace ClaimFlow.Infrastructure.Migrations
                     ClaimId = table.Column<Guid>(type: "uuid", nullable: false),
                     FromStatus = table.Column<int>(type: "integer", nullable: false),
                     ToStatus = table.Column<int>(type: "integer", nullable: false),
-                    ChangedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ChangedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ChangedBy = table.Column<string>(type: "text", nullable: false),
                     Comment = table.Column<string>(type: "text", nullable: false)
                 },

@@ -13,7 +13,7 @@ namespace ClaimFlow.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            
             var connectionString = builder.Configuration.GetConnectionString("ClaimFlowConnection");
             var dbPassword = Environment.GetEnvironmentVariable("CLAIMFLOW_DB_PASSWORD");
             var fullConnectionString = $"{connectionString}Password={dbPassword};";

@@ -44,8 +44,8 @@ namespace ClaimFlow.Domain
             StatusHistories.Add(initialHistory);
         }
 
-        public Guid ClaimId { get; set; }
-        public Guid PolicyId { get; set; }
+        public Guid ClaimId { get; private set; }
+        public Guid PolicyId { get; private set; }
         public Policy Policy { get; set; } = null!;
         public int Amount { get; set; }
         public string Description { get; set; }
@@ -71,8 +71,8 @@ namespace ClaimFlow.Domain
 
             var history = new ClaimStatusHistory
             {
-                ClaimStatusHistoryId = Guid.NewGuid(),
-                ClaimId = this.ClaimId,
+                //ClaimStatusHistoryId = Guid.NewGuid(), including the GUID manually makes EF consider this entity an update rather than insert
+                Claim = this,
                 FromStatus = oldStatus,
                 ToStatus = status,
                 ChangedAt = DateTime.UtcNow,

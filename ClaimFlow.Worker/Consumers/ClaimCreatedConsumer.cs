@@ -8,6 +8,7 @@ using ClaimFlow.Domain.Events;
 using ClaimFlow.Infrastructure;
 using ClaimFlow.Domain;
 using Microsoft.EntityFrameworkCore;
+using ClaimFlow.Domain.Services;
 
 
 namespace ClaimFlow.Worker.Consumers
@@ -16,11 +17,13 @@ namespace ClaimFlow.Worker.Consumers
     {
         private readonly ILogger<ClaimCreatedConsumer> _logger;
         private readonly ClaimFlowDbContext _context;
+        private readonly ClaimEvaluationService _claimEvaluation;
 
-        public ClaimCreatedConsumer(ILogger<ClaimCreatedConsumer> logger, ClaimFlowDbContext context)
+        public ClaimCreatedConsumer(ILogger<ClaimCreatedConsumer> logger, ClaimFlowDbContext context, ClaimEvaluationService claimEvaluationService)
         {
             _logger = logger;
             _context = context;
+            _claimEvaluation = claimEvaluationService;
         }
 
         public async Task Consume(ConsumeContext<ClaimCreatedEvent> claimContext)
@@ -28,42 +31,29 @@ namespace ClaimFlow.Worker.Consumers
             var message = claimContext.Message;
             _logger.LogInformation(">>> [Worker] Received ClaimCreatedEvent!");
             _logger.LogInformation($">>> Processing Claim ID: {message.ClaimId} for Amount: ${message.Amount}");
-            
-            var claim = _context.Claims.Include(x => x.StatusHistories).FirstOrDefault(c => c.ClaimId == message.ClaimId);
+
+            var claim = await _context.Claims.Include(x => x.StatusHistories).FirstOrDefaultAsync(c => c.ClaimId == message.ClaimId);
 
             if (claim == null)
             {
                 _logger.LogError(">>> The claim does not exist.");
+                return;
             }
-            else if (claim.Status != ClaimStatus.UnderReview)
+
+            var policy = await _context.Policies.FirstOrDefaultAsync(p => p.PolicyId == claim.PolicyId);
+            try
             {
-                _logger.LogError(">>> The claim has already been processed.");
+                _claimEvaluation.Evaluate(claim, policy);
+                await Task.Delay(1000); //arbitrarily delaying the worker
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($">>> [Worker] Claim {message.ClaimId} processed successfully.");
             }
-            else
+            catch (Exception e)
             {
-                var policy = _context.Policies.FirstOrDefault(p => p.PolicyId == claim.PolicyId);
-                if (policy == null)
-                {
-                    _logger.LogError(">>> The policy does not exist.");
-                }
-                else
-                {
-                    if (claim.Amount < policy.CoverageAmount)
-                    {
-                        claim.UpdateStatus(Domain.ClaimStatus.Approved,"Worker", "Fits within the coverage");
-                    }
-                    else
-                    {
-                        claim.UpdateStatus(Domain.ClaimStatus.Rejected, "Worker", "Outside the coverage range");
-                    }
-
-                    await Task.Delay(1000); //arbitrarily delaying the worker
-                    await _context.SaveChangesAsync();
-
-                    _logger.LogInformation($">>> [Worker] Claim {message.ClaimId} processed successfully.");
-                }
-
+                _logger.LogError($"Error: {e.Message}");
             }
+
         }
     }
 }

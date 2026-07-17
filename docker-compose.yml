@@ -33,6 +33,11 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=${CLAIMFLOW_RABBIT_USER}
       - RABBITMQ_DEFAULT_PASS=${CLAIMFLOW_RABBIT_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   claimflow.worker:
     image: ${DOCKER_REGISTRY-}claimflowworker
     build:
@@ -40,10 +45,14 @@ services:
       dockerfile: ClaimFlow.Worker/Dockerfile
     environment:
       - CLAIMFLOW_DB_PASSWORD=${CLAIMFLOW_DB_PASSWORD}
+      - CLAIMFLOW_RABBIT_USER=${CLAIMFLOW_RABBIT_USER}
+      - CLAIMFLOW_RABBIT_PASS=${CLAIMFLOW_RABBIT_PASS}
       - RABBITMQ_HOST=rabbitmq
     depends_on:
-      - rabbitmq
-      - postgres_db
+      postgres_db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
   claimflow-frontend:
     image: claimflow-frontend
     container_name: claimflow_frontend

@@ -231,7 +231,7 @@ namespace ClaimFlow.API.Controllers
             {
                 return NotFound($"Policy ID:[{request.PolicyId}] not found.");
             }
-            if (DateTime.Compare(request.IncidentDate, DateTime.Now) > 0)
+            if (DateTime.Compare(request.IncidentDate.ToUniversalTime(), DateTime.UtcNow) > 0)
             {
                 return BadRequest("The incident date is in the future.");
             }
@@ -242,20 +242,21 @@ namespace ClaimFlow.API.Controllers
                 amount: request.Amount,
                 description: request.Description,
                 incidentDate: request.IncidentDate.ToUniversalTime(),
-                createdAt: DateTime.Now.ToUniversalTime()
+                createdAt: DateTime.UtcNow
                 );
 
             _context.Claims.Add(claim);
 
             await _context.SaveChangesAsync();
 
+
             await _publishEndpoint.Publish(new ClaimCreatedEvent(
                  ClaimId: claim.ClaimId,
                  PolicyId: claim.PolicyId,
                  Amount: claim.Amount,
                  Description: claim.Description,
-                 IncidentDate: claim.IncidentDate,
-                 CreatedAt: claim.CreatedAt,
+                 IncidentDate: claim.IncidentDate.ToUniversalTime(),
+                 CreatedAt: claim.CreatedAt.ToUniversalTime(),
                  Status: claim.Status
             ));
 

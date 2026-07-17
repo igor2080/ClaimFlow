@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ClaimFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ClaimFlowDbContext))]
-    [Migration("20260704171156_Initial")]
-    partial class Initial
+    [Migration("20260717154945_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,10 +35,10 @@ namespace ClaimFlow.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("DecidedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("DecisionReason")
                         .HasColumnType("text");
@@ -48,7 +48,7 @@ namespace ClaimFlow.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("IncidentDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("PolicyId")
                         .HasColumnType("uuid");
@@ -70,7 +70,7 @@ namespace ClaimFlow.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("ChangedBy")
                         .IsRequired()
@@ -103,7 +103,7 @@ namespace ClaimFlow.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -137,10 +137,10 @@ namespace ClaimFlow.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("ValidTo")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("PolicyId");
 
@@ -163,7 +163,7 @@ namespace ClaimFlow.Infrastructure.Migrations
             modelBuilder.Entity("ClaimFlow.Domain.ClaimStatusHistory", b =>
                 {
                     b.HasOne("ClaimFlow.Domain.Claim", "Claim")
-                        .WithMany()
+                        .WithMany("StatusHistories")
                         .HasForeignKey("ClaimId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -180,6 +180,11 @@ namespace ClaimFlow.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("ClaimFlow.Domain.Claim", b =>
+                {
+                    b.Navigation("StatusHistories");
                 });
 
             modelBuilder.Entity("ClaimFlow.Domain.Customer", b =>

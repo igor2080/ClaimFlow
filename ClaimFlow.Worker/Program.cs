@@ -1,3 +1,4 @@
+using ClaimFlow.Domain.Services;
 using ClaimFlow.Infrastructure;
 using ClaimFlow.Worker.Consumers;
 using MassTransit;
@@ -10,7 +11,7 @@ namespace ClaimFlow.Worker
         public static void Main(string[] args)
         {
             var builder = Host.CreateApplicationBuilder(args);
-
+            
             builder.Services.AddHostedService<Worker>();
 
             var connectionString = builder.Configuration.GetConnectionString("ClaimFlowConnection");
@@ -33,6 +34,8 @@ namespace ClaimFlow.Worker
                     cfg.ConfigureEndpoints(context);
                 });
             });
+
+            builder.Services.AddSingleton<ClaimEvaluationService>();
 
             var host = builder.Build();
             host.Run();
