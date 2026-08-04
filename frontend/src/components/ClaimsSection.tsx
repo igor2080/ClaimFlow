@@ -1,4 +1,5 @@
-import { useState, FormEvent } from 'react';
+import type { SubmitEvent } from 'react';
+import { useState } from 'react';
 import { api } from '../api/client';
 import type { CreateClaimDto } from '../types/models';
 
@@ -14,7 +15,7 @@ export default function ClaimsSection() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCreateClaim = async (e: FormEvent) => {
+  const handleCreateClaim = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!policyId.trim() || !description.trim()) return;
 

@@ -1,4 +1,5 @@
-import { useState, useEffect, FormEvent } from 'react';
+import type { SubmitEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import {
   getPolicyTypeName,
@@ -40,11 +41,11 @@ export default function PoliciesSection() {
         setCustomers(data);
         if (data.length > 0) setSelectedCustomerId(data[0].customerId);
       })
-      .catch((err) => setError('Failed to load customers for dropdown selection.'));
+      .catch((err) => setError(`Failed to load customers for dropdown selection. (${err})`));
   }, []);
 
   // Handle Policy Creation
-  const handleCreatePolicy = async (e: FormEvent) => {
+  const handleCreatePolicy = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedCustomerId) return;
 

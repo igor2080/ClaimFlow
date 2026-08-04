@@ -1,4 +1,5 @@
-import { useState, useEffect, FormEvent } from 'react';
+import type { SubmitEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import type { Customer, CreateCustomerDto } from '../types/models';
 
@@ -29,7 +30,7 @@ export default function CustomersSection() {
     loadCustomers();
   }, []);
 
-  const handleCreateCustomer = async (e: FormEvent) => {
+  const handleCreateCustomer = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!fullName || !email) return;
 
