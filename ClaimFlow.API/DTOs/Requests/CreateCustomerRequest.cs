@@ -3,7 +3,7 @@
 namespace ClaimFlow.API.DTOs.Requests
 {
     public record CreateCustomerRequest(
-        string Name,
+        string FullName,
         string Email
 
     );

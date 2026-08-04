@@ -31,12 +31,12 @@ namespace ClaimFlow.API.Controllers
             var existingCustomer = await _context.Customers.AnyAsync(c => c.Email == request.Email);
             if (existingCustomer)
             {
-                return Conflict($"Customer with email '{request.Email}' already exists.");
+                return Conflict(new { email = request.Email, message = "Customer with this email already exists." });
             }
             var customer = new Customer
             {
                 CustomerId = Guid.NewGuid(),
-                FullName = request.Name,
+                FullName = request.FullName,
                 Email = request.Email,
                 CreatedAt = DateTime.UtcNow
             };
@@ -44,7 +44,7 @@ namespace ClaimFlow.API.Controllers
             _context.Add<Customer>(customer);
             await _context.SaveChangesAsync();
 
-            return Ok($"Customer '{request.Name}' ID:({customer.CustomerId}) created");
+            return Ok(new { id = customer.CustomerId, message = "Customer created successfully" });
         }
 
         [HttpGet("GetCustomer/{id:guid}")]
@@ -53,14 +53,14 @@ namespace ClaimFlow.API.Controllers
             var customer = await _context.Customers.Include(x => x.Policies).FirstOrDefaultAsync(x => x.CustomerId == id);
             if (customer == null)
             {
-                return NotFound($"Customer {id} not found");
+                return NotFound(new { id = id, message = "Customer not found" });
             }
 
             var policies = customer.Policies.Select(x => new PolicyDto
             {
                 PolicyId = x.PolicyId,
                 PolicyNumber = x.PolicyNumber,
-                PolicyType = (int)x.Type,
+                PolicyType = (int)x.PolicyType,
                 CoverageAmount = x.CoverageAmount,
                 ValidFrom = x.ValidFrom,
                 ValidTo = x.ValidTo,
@@ -93,7 +93,7 @@ namespace ClaimFlow.API.Controllers
                         {
                             PolicyId = p.PolicyId,
                             PolicyNumber = p.PolicyNumber,
-                            PolicyType = (int)p.Type,
+                            PolicyType = (int)p.PolicyType,
                             CoverageAmount = p.CoverageAmount,
                             ValidFrom = p.ValidFrom,
                             ValidTo = p.ValidTo
@@ -123,28 +123,28 @@ namespace ClaimFlow.API.Controllers
 
             if (request.CustomerId == Guid.Empty || request.PolicyNumber < 1 || request.ValidFrom >= request.ValidTo)
             {
-                return BadRequest("Invalid input parameters");
+                return BadRequest(new { message = "Invalid input parameters" });
             }
             if (Enum.IsDefined(typeof(PolicyType), request.PolicyType) == false)
             {
-                return BadRequest("Invalid policy type");
+                return BadRequest(new { message = "Invalid policy type" });
             }
             var policyExists = await _context.Policies.AnyAsync(p => p.PolicyNumber == request.PolicyNumber);
             if (policyExists)
             {
-                return Conflict($"Policy number '{request.PolicyNumber}' already exists");
+                return Conflict(new { policyNumber = request.PolicyNumber, message = "Policy number already exists." });
             }
             var customer = await _context.Customers.AnyAsync(x => x.CustomerId == request.CustomerId);
             if (!customer)
             {
-                return NotFound("Customer not found");
+                return NotFound(new { message = "Customer not found" });
             }
 
             Policy policy = new Policy
             {
                 PolicyId = Guid.NewGuid(),
                 CustomerId = request.CustomerId,
-                Type = (PolicyType)request.PolicyType,
+                PolicyType = (PolicyType)request.PolicyType,
                 PolicyNumber = request.PolicyNumber,
                 CoverageAmount = request.CoverageAmount,
                 ValidFrom = request.ValidFrom.ToUniversalTime(),
@@ -154,22 +154,33 @@ namespace ClaimFlow.API.Controllers
             _context.Add<Policy>(policy);
             await _context.SaveChangesAsync();
 
-            return Ok($"Policy '{request.PolicyNumber}' ID:({policy.PolicyId}) created for Customer ID:({request.CustomerId})");
+            return Ok(new { id = policy.PolicyId, message = $"Policy '{request.PolicyNumber}' ID:({policy.PolicyId}) created for Customer ID:({request.CustomerId})" });
 
         }
 
         [HttpGet("GetPolicy/{id:Guid}")]
         public async Task<IActionResult> GetPolicy(Guid id, bool withHistory = true)
         {
-            var policyExists = await _context.Policies.AnyAsync(x => x.PolicyId == id);
+            IQueryable<Policy> query = _context.Policies.Include(x => x.Customer);
 
-            if (!policyExists)
+            //placing the include of claims in each part prevents an ugly cast requirement
+
+            if (withHistory)
             {
-                return NotFound($"Policy ID:({id}) does not exist.");
+                query = query.Include(x => x.Claims!)
+                        .ThenInclude(x => x.StatusHistories);
+            }
+            else
+            {
+                query = query.Include(x => x.Claims!);
             }
 
-            Policy policy = await _context.Policies.Include(x => x.Customer).Include(x => x.Claims).ThenInclude(x => x.StatusHistories).FirstAsync(x => x.PolicyId == id);
+            Policy? policy = await query.FirstOrDefaultAsync(x => x.PolicyId == id);
 
+            if (policy == null)
+            {
+                return NotFound(new { id, message = $"Policy ID:({id}) does not exist." });
+            }
             CustomerDto customer = new CustomerDto
             {
                 FullName = policy.Customer.FullName,
@@ -191,12 +202,12 @@ namespace ClaimFlow.API.Controllers
                 Status = x.Status.ToString()
             }).ToList();
 
-            PolicyResponseDto response = new()
+            PolicyResponseDto policyResponse = new()
             {
                 PolicyId = policy.PolicyId,
                 Customer = customer,
                 PolicyNumber = policy.PolicyNumber,
-                Type = policy.Type,
+                PolicyType = policy.PolicyType,
                 CoverageAmount = policy.CoverageAmount,
                 ValidFrom = policy.ValidFrom.ToUniversalTime(),
                 ValidTo = policy.ValidTo.ToUniversalTime(),
@@ -205,8 +216,8 @@ namespace ClaimFlow.API.Controllers
 
             if (withHistory)
             {
-                response.ClaimStatusHistories = policy.Claims?
-                    .SelectMany(x => x.StatusHistories).OrderBy(x => x.ClaimId)
+                policyResponse.ClaimStatusHistories = policy.Claims?
+                    .SelectMany(x => x.StatusHistories!).OrderBy(x => x.ClaimId)
                     .Select(x => new ClaimHistoryDto
                     {
                         ClaimStatusHistoryId = x.ClaimStatusHistoryId,
@@ -220,7 +231,7 @@ namespace ClaimFlow.API.Controllers
             }
 
 
-            return Ok(response);
+            return Ok(policyResponse);
         }
 
         [HttpPost("CreateClaim")]
@@ -229,11 +240,11 @@ namespace ClaimFlow.API.Controllers
             var policy = await _context.Policies.AnyAsync(x => x.PolicyId == request.PolicyId);
             if (!policy)
             {
-                return NotFound($"Policy ID:[{request.PolicyId}] not found.");
+                return NotFound(new { id = request.PolicyId, message = $"Policy ID:[{request.PolicyId}] not found." });
             }
             if (DateTime.Compare(request.IncidentDate.ToUniversalTime(), DateTime.UtcNow) > 0)
             {
-                return BadRequest("The incident date is in the future.");
+                return BadRequest(new { message = "The incident date is in the future." });
             }
 
             var claim = new Claim(
@@ -261,7 +272,7 @@ namespace ClaimFlow.API.Controllers
             ));
 
 
-            return Ok($"Claim for the amount of {request.Amount}, policy ID:[{request.PolicyId}] has been created. Claim ID: [{claim.ClaimId}]");
+            return Ok(new { id = claim.ClaimId, message = $"Claim for the amount of {request.Amount}, policy ID:[{request.PolicyId}] has been created." });
         }
     }
 }

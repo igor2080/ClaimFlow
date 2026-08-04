@@ -13,7 +13,7 @@ namespace ClaimFlow.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            
+
             var connectionString = builder.Configuration.GetConnectionString("ClaimFlowConnection");
             var dbPassword = Environment.GetEnvironmentVariable("CLAIMFLOW_DB_PASSWORD");
             var fullConnectionString = $"{connectionString}Password={dbPassword};";
@@ -49,11 +49,13 @@ namespace ClaimFlow.API
                 options.AddPolicy("AllowFrontend", policy =>
                 {
                     policy.WithOrigins(
+                        "http://localhost",
                         "https://localhost",
-                        "http://localhost:5173" //Vite's default port
-                        ) 
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
+                        "http://localhost:5173",
+                        "http://localhost:3000"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
                 });
             });
 

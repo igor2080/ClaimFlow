@@ -1,123 +1,45 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { useState } from 'react';
+import CustomersSection from './components/CustomersSection';
+import PoliciesSection from './components/PoliciesSection';
+import ClaimsSection from './components/ClaimsSection';
 
-//enum emulation 
-const PolicyTypeMap = {
-  0: 'Auto',
-  1: 'Property',
-  2: 'Health',
-} as const;
-//in case unexpected policy type comes back
-const getPolicyTypeName = (typeId: number): string => {
-  return typeId in PolicyTypeMap 
-    ? PolicyTypeMap[typeId as keyof typeof PolicyTypeMap] 
-    : `Unknown Type (${typeId})`;
-};
+type Tab = 'customers' | 'policies' | 'claims';
 
-interface Policy {
-  policyId: string;
-  policyNumber: number;
-  policyType: number;
-  coverageAmount: number;
-  validFrom: string;
-  validTo: string;
-}
+export default function App() {
+  const [activeTab, setActiveTab] = useState<Tab>('customers');
 
-interface Customer {
-  customerId: string;
-  fullName: string;
-  email: string;
-  createdAt: string;
-  policies: Policy[];
-}
+  return (
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1>ClaimFlow Dashboard</h1>
 
-function App() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState<Boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+      {/* Navigation Tabs */}
+      <nav style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #ddd' }}>
+        <button
+          style={{ padding: '10px 20px', fontWeight: activeTab === 'customers' ? 'bold' : 'normal' }}
+          onClick={() => setActiveTab('customers')}
+        >
+          Customers
+        </button>
+        <button
+          style={{ padding: '10px 20px', fontWeight: activeTab === 'policies' ? 'bold' : 'normal' }}
+          onClick={() => setActiveTab('policies')}
+        >
+          Policies
+        </button>
+        <button
+          style={{ padding: '10px 20px', fontWeight: activeTab === 'claims' ? 'bold' : 'normal' }}
+          onClick={() => setActiveTab('claims')}
+        >
+          Claims
+        </button>
+      </nav>
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost';
-
-  useEffect(() => {
-    const fetch_customers = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/GetCustomers?withPolicies=true`);
-
-        if (!response.ok) {
-          throw new Error(`API Error: ${response.status}`);
-        }
-
-        const data: Customer[] = await response.json();
-        setCustomers(data);
-      } catch (err: any) {
-        setError(err.message || 'Error connecting to the API.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetch_customers();
-  }, [API_BASE_URL]);
-  if (loading) return <div style={{ padding: '20px' }}>Loading...</div>;
-  if (error) return <div style={{ padding: '20px', color: 'red' }}>Error: {error}</div>;
-
-  return(
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', backgroundColor: '#fafafa', minHeight: '100vh' }}>
-      <h1>ClaimFlow Management Dashboard</h1>
-      
-      {customers.length === 0 ? (
-        <p>No customers found.</p>
-      ) : (
-        customers.map((customer) => (
-          <div key={customer.customerId} style={{ 
-            background: '#fff', 
-            padding: '20px', 
-            marginBottom: '20px', 
-            borderRadius: '8px', 
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)' 
-          }}>
-            <h2 style={{ margin: '0 0 5px 0' }}>{customer.fullName}</h2>
-            <p style={{ color: '#666', margin: '0 0 15px 0' }}>{customer.email} | <small><code>{customer.customerId}</code></small></p>
-
-            <h3>Active Policies ({customer.policies?.length || 0})</h3>
-            {!customer.policies || customer.policies.length === 0 ? (
-              <p style={{ color: '#999', fontStyle: 'italic' }}>No policies registered to this profile.</p>
-            ) : (
-              <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%', borderColor: '#eee' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f9f9f9', textAlign: 'left' }}>
-                    <th>Policy #</th>
-                    <th>Type</th>
-                    <th>Coverage</th>
-                    <th>Term Dates</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customer.policies.map((policy) => (
-                    <tr key={policy.policyId}>
-                      <td><code>{policy.policyNumber}</code></td>
-                      <td>
-                        <strong style={{ color: '#2b6cb0' }}>
-                          {getPolicyTypeName(policy.policyType)}
-                        </strong>
-                      </td>
-                      <td>${policy.coverageAmount.toLocaleString()}</td>
-                      <td>
-                        <small>
-                          {new Date(policy.validFrom).toLocaleDateString()} to {new Date(policy.validTo).toLocaleDateString()}
-                        </small>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        ))
-      )}
+      {/* Tab Panels */}
+      <main>
+        {activeTab === 'customers' && <CustomersSection />}
+        {activeTab === 'policies' && <PoliciesSection />}
+        {activeTab === 'claims' && <ClaimsSection />}
+      </main>
     </div>
   );
 }
-
-export default App

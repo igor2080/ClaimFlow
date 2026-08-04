@@ -18,7 +18,7 @@ namespace ClaimFlow.Domain
         public Guid CustomerId { get; set; }
         public Customer Customer { get; set; }
         public int PolicyNumber { get; set; }
-        public PolicyType Type { get; set; }
+        public PolicyType PolicyType { get; set; }
         public int CoverageAmount { get; set; }
         public DateTime ValidFrom { get; set; }
         public DateTime ValidTo { get; set; }

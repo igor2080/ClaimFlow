@@ -6,7 +6,7 @@ namespace ClaimFlow.API.DTOs.Requests
     {
         public CreateCustomerRequestValidator()
         {
-            RuleFor(x => x.Name)
+            RuleFor(x => x.FullName)
                 .NotEmpty().WithMessage("Name is required.");
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")

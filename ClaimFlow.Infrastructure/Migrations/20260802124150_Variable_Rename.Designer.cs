@@ -3,6 +3,7 @@ using System;
 using ClaimFlow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ClaimFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ClaimFlowDbContext))]
-    partial class ClaimFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802124150_Variable_Rename")]
+    partial class Variable_Rename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
