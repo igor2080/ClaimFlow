@@ -1,10 +1,4 @@
 <Solution>
-  <Folder Name="/Tests/">
-    <Project Path="Tests/ClaimFlow.Domain.Tests/ClaimFlow.Domain.Tests.csproj">
-      <BuildDependency Project="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
-    </Project>
-    <Project Path="Tests/ClaimFlow.Infrastructure.Tests/ClaimFlow.Infrastructure.Tests.csproj" />
-  </Folder>
   <Project Path="ClaimFlow.API/ClaimFlow.API.csproj">
     <BuildDependency Project="ClaimFlow.Domain/ClaimFlow.Domain.csproj" />
     <BuildDependency Project="ClaimFlow.Infrastructure/ClaimFlow.Infrastructure.csproj" />
