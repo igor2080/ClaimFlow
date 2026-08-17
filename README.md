@@ -26,5 +26,4 @@ flowchart LR
 | Worker    | .NET BackgroundService (MassTransit consumer) |
 | Frontend  | React + TypeScript (Vite)                     |
 | Infra     | Docker Compose, Caddy (reverse proxy, HTTPS)  |
-| Tests     | xUnit                                         |
 ```
